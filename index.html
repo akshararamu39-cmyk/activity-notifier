@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity WhatsApp Notifier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#003d82;
+    --navy-dark:#00285a;
+    --gold:#f0a500;
+    --wa:#25D366;
+    --wa-dark:#1ea952;
+    --bg:#f4f6fa;
+    --card:#ffffff;
+    --border:#e2e6ee;
+    --text:#1c2733;
+    --muted:#6b7686;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);}
+  .app{max-width:1100px;margin:0 auto;padding:20px 16px 60px;}
+
+  header.top{
+    background:linear-gradient(135deg,var(--navy),var(--navy-dark));
+    color:#fff;border-radius:14px;padding:20px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;margin-bottom:14px;
+  }
+  header.top h1{font-size:19px;margin:0;font-weight:600;}
+  header.top p{margin:4px 0 0;font-size:12.5px;color:#cfe0f5;}
+  .badge{background:var(--gold);color:#2b1c00;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .tab-btn{
+    flex:1;background:#fff;border:1.5px solid var(--border);color:var(--muted);
+    font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;
+    padding:12px;border-radius:10px;cursor:pointer;transition:all .15s;
+  }
+  .tab-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
+  .card h2{font-size:14px;margin:0 0 12px;color:var(--navy);font-weight:600;display:flex;align-items:center;gap:8px;}
+
+  .activity-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+  .activity-bar .field{flex:1;min-width:220px;}
+  label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
+  input[type=text], select, textarea{
+    width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;
+    font-family:'Poppins',sans-serif;font-size:13.5px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;
+  }
+  input[type=text]:focus, select:focus, textarea:focus{border-color:var(--navy);}
+  input#activityName{font-weight:600;}
+  .status-pill{font-size:11.5px;font-weight:600;padding:9px 14px;border-radius:8px;white-space:nowrap;}
+  .status-pill.ok{background:#e6f8ee;color:var(--wa-dark);}
+  .status-pill.warn{background:#fff3e0;color:#b06a00;}
+
+  .filters{display:flex;gap:12px;flex-wrap:wrap;}
+  .filters .field{flex:1;min-width:160px;}
+
+  .btn{font-family:'Poppins',sans-serif;font-weight:600;font-size:12.5px;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-dark);}
+  .btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text);}
+  .btn-outline:hover{background:#f0f4fa;}
+  .btn-danger{background:#fdeceb;color:#c0392b;}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  code{background:#f0f4fa;padding:1px 5px;border-radius:4px;font-size:11px;}
+
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap;}
+  tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr:hover{background:#fafbfd;}
+  tbody tr.sent-row{background:#f4fbf7;}
+  .student-name{font-weight:600;color:var(--text);}
+  .sub{color:var(--muted);font-size:11.5px;}
+  .cls-chip{background:#eef3fb;color:var(--navy);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .sent-chip{background:#e6f8ee;color:var(--wa-dark);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-block;margin-top:4px;}
+  .wa-btn{display:inline-flex;align-items:center;gap:6px;background:var(--wa);color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:600;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .15s, opacity .15s;}
+  .wa-btn:hover{background:var(--wa-dark);}
+  .wa-btn:disabled{background:#cfd6e0;cursor:not-allowed;opacity:.7;}
+  .wa-btn.resend{background:#fff;color:var(--wa-dark);border:1.5px solid var(--wa);}
+  .wa-btn svg{width:14px;height:14px;fill:#fff;}
+  .wa-btn.resend svg{fill:var(--wa-dark);}
+  .student-card{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap;
+  }
+  .student-card:last-child{border-bottom:none;}
+  .student-card.sent-row{background:#f4fbf7;border-radius:10px;padding-left:10px;padding-right:10px;}
+  .student-info{flex:1;min-width:180px;}
+  .student-card .wa-btn{flex-shrink:0;}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+  .count-tag{font-size:12px;color:var(--muted);font-weight:500;}
+  .footer-note{text-align:center;font-size:11.5px;color:var(--muted);margin-top:24px;}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c2733;color:#fff;
+    padding:11px 20px;border-radius:8px;font-size:12.5px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.2);
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:999;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .stat-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .stat-card{flex:1;min-width:150px;background:linear-gradient(135deg,#fff,#f7f9fc);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .stat-card .num{font-size:26px;font-weight:700;color:var(--navy);}
+  .stat-card .lbl{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-top:2px;}
+  .progress-bar{width:100%;height:8px;background:#eef1f6;border-radius:6px;overflow:hidden;margin-top:4px;}
+  .progress-bar .fill{height:100%;background:var(--wa);border-radius:6px;}
+  .pending-tag{background:#fff3e0;color:#b06a00;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .sync-note{
+    display:flex;align-items:center;gap:10px;background:#eef6ff;border:1px solid #cfe0f5;
+    border-radius:10px;padding:10px 14px;font-size:12px;color:var(--navy);margin-bottom:14px;flex-wrap:wrap;
+  }
+  .sync-note b{white-space:nowrap;}
+  .spinner{
+    width:14px;height:14px;border:2px solid #cfe0f5;border-top-color:var(--navy);border-radius:50%;
+    display:inline-block;animation:spin .7s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div>
+      <h1>📣 Activity WhatsApp Notifier</h1>
+      <p>Akshara International School — send activity updates to parents in one tap</p>
+    </div>
+    <span class="badge" id="branchCount">Loading…</span>
+  </header>
+
+  <div class="sync-note" id="syncNote">
+    <span class="spinner" id="syncSpinner"></span>
+    <span id="syncText">Loading students from Google Sheet…</span>
+    <button class="btn btn-outline" id="btnRefresh" style="margin-left:auto;">🔄 Refresh Data</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="send">✉️ Send Messages</button>
+    <button class="tab-btn" data-tab="reports">📊 Reports</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-send">
+
+    <div class="card">
+      <h2>1. Enter today's activity</h2>
+      <div class="activity-bar">
+        <div class="field">
+          <label for="activityName">Activity Name (required before sending)</label>
+          <input type="text" id="activityName" placeholder="e.g. Annual Sports Day, Science Exhibition, Yoga Session" list="activityHistory">
+          <datalist id="activityHistory"></datalist>
+        </div>
+        <div id="activityStatus" class="status-pill warn">⚠ Enter activity name to enable sending</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2. Filter students</h2>
+      <div class="filters">
+        <div class="field"><label>Branch</label><select id="fBranch"></select></div>
+        <div class="field"><label>Class</label><select id="fClass"></select></div>
+        <div class="field"><label>Section</label><select id="fSection"></select></div>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>Search Student Name</label>
+        <input type="text" id="searchBox" placeholder="Type a student's name…">
+      </div>
+      <div style="margin-top:14px;">
+        <span class="count-tag" id="resultCount"></span>
+      </div>
+      <div class="hint">Student data comes directly from your school's Google Sheet. To add, remove, or fix a student, edit the Sheet — then tap "Refresh Data" above.</div>
+    </div>
+
+    <div class="card">
+      <h2>3. Tap WhatsApp to notify a parent</h2>
+      <div id="cardList"></div>
+      <div class="empty" id="emptyState" style="display:none;">No students found for this filter.</div>
+    </div>
+
+    <p class="footer-note">Tapping the WhatsApp icon opens WhatsApp with the message pre-filled — attach photos/videos there before sending.</p>
+  </div>
+
+  <div class="tab-panel" id="tab-reports">
+
+    <div class="card">
+      <h2>Filter report</h2>
+      <div class="filters">
+        <div class="field"><label>Activity</label><select id="rActivity"></select></div>
+        <div class="field"><label>Branch</label><select id="rBranch"></select></div>
+      </div>
+    </div>
+
+    <div class="stat-row" id="statRow"></div>
+
+    <div class="card">
+      <h2>Branch-wise coverage</h2>
+      <div class="table-wrap">
+        <table><thead><tr><th>Branch</th><th>Sent</th><th>Total Students</th><th>Coverage</th></tr></thead>
+        <tbody id="branchReportBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Class-wise coverage</h2>
+      <div class="table-wrap">
+        <table><thead><tr><th>Branch</th><th>Class-Section</th><th>Sent</th><th>Total Students</th><th>Coverage</th></tr></thead>
+        <tbody id="classReportBody"></tbody></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Pending (not yet notified for selected activity)</h2>
+      <div class="table-wrap">
+        <table><thead><tr><th>Student</th><th>Class</th><th>Branch</th><th>Parent</th></tr></thead>
+        <tbody id="pendingBody"></tbody></table>
+        <div class="empty" id="pendingEmpty" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Send log</h2>
+      <div class="table-wrap">
+        <table><thead><tr><th>Date/Time</th><th>Activity</th><th>Student</th><th>Class</th><th>Branch</th></tr></thead>
+        <tbody id="logBody"></tbody></table>
+        <div class="empty" id="logEmpty" style="display:none;">No messages sent yet.</div>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-danger" id="btnClearLog">Clear Send Log</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== CONFIGURE THIS: paste your Apps Script Web App URL below =====
+const API_URL = 'https://script.google.com/macros/s/AKfycbzIYOES4bR76n1Chpvmvnzgkvo1tZiBdn8L8wAGE3Xx_71-vkK0BthnyWoGt6S6Tx_Y/exec';
+// =======================================================================
+
+const PRESET_BRANCH = new URLSearchParams(window.location.search).get('branch') || '';
+let students = [];
+let sentLog = [];
+let dataLoaded = false;
+
+const $ = id => document.getElementById(id);
+const cardList = $('cardList');
+const searchBox = $('searchBox');
+const fBranch = $('fBranch'), fClass = $('fClass'), fSection = $('fSection');
+const activityInput = $('activityName');
+const activityStatus = $('activityStatus');
+const emptyState = $('emptyState');
+const branchCount = $('branchCount');
+const resultCount = $('resultCount');
+const syncNote = $('syncNote'), syncSpinner = $('syncSpinner'), syncText = $('syncText');
+
+function showToast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function escapeHtml(str){
+  return (str||'').toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function debounce(fn, delay){
+  let t = null;
+  return function(){
+    clearTimeout(t);
+    t = setTimeout(fn, delay);
+  };
+}
+
+function setSyncState(state, text){
+  syncText.textContent = text;
+  syncSpinner.style.display = (state === 'loading') ? 'inline-block' : 'none';
+  syncNote.style.borderColor = (state === 'error') ? '#f0a500' : '#cfe0f5';
+}
+
+// ---------- Server calls (Apps Script JSON API via fetch) ----------
+async function loadStudents(){
+  setSyncState('loading', 'Loading students from Google Sheet…');
+  try{
+    const res = await fetch(API_URL + '?action=getStudents');
+    students = await res.json();
+  }catch(err){
+    showToast('⚠ Could not load student data — check the API URL / Students sheet');
+    console.error(err);
+    students = [];
+  }
+}
+async function loadLog(){
+  try{
+    const res = await fetch(API_URL + '?action=getSendLog');
+    sentLog = await res.json();
+  }catch(err){
+    sentLog = [];
+  }
+}
+async function logSendToServer(entry){
+  try{
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
+      body: JSON.stringify(Object.assign({ action: 'logSend' }, entry))
+    });
+  }catch(err){
+    showToast('⚠ Sent in WhatsApp, but could not save to log');
+  }
+}
+async function clearSendLogOnServer(){
+  const res = await fetch(API_URL + '?action=clearSendLog');
+  return res.json();
+}
+async function refreshAll(showMsg){
+  await Promise.all([loadStudents(), loadLog()]);
+  dataLoaded = true;
+  setSyncState('ok', 'Synced with Google Sheet · ' + students.length + ' students');
+  populateFilters();
+  applyPresetBranch();
+  refreshActivityHistory();
+  updateActivityStatus();
+  render();
+  if(document.getElementById('tab-reports').classList.contains('active')) renderReports();
+  if(showMsg) showToast('✅ Data refreshed');
+}
+function applyPresetBranch(){
+  if(!PRESET_BRANCH) return;
+  const branches = uniqueSorted(students.map(s=>s.branch));
+  const match = branches.find(b => b.toLowerCase() === PRESET_BRANCH.toLowerCase());
+  if(match){
+    fBranch.value = match;
+    fBranch.disabled = true;
+    fBranch.title = 'Branch fixed by this link';
+    updateClassOptions();
+    branchCount.textContent = match + ' · ' + students.filter(s=>s.branch===match).length + ' students';
+  }
+}
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $('tab-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'reports') renderReports();
+  });
+});
+$('btnRefresh').addEventListener('click', ()=>refreshAll(true));
+
+// ---------- Filters ----------
+function uniqueSorted(arr){
+  return [...new Set(arr.filter(Boolean))].sort((a,b)=>a.localeCompare(b, undefined, {numeric:true}));
+}
+function fillSelect(sel, values, allLabel){
+  const current = sel.value;
+  sel.innerHTML = '<option value="">'+allLabel+'</option>' + values.map(v=>'<option value="'+v+'">'+v+'</option>').join('');
+  if(values.includes(current)) sel.value = current;
+}
+function populateFilters(){
+  const branches = uniqueSorted(students.map(s=>s.branch));
+  fillSelect(fBranch, branches, 'All Branches');
+  branchCount.textContent = students.length + ' students · ' + branches.length + ' branch(es)';
+  updateClassOptions();
+}
+function updateClassOptions(){
+  const branch = fBranch.value;
+  const pool = branch ? students.filter(s=>s.branch===branch) : students;
+  fillSelect(fClass, uniqueSorted(pool.map(s=>s.class)), 'All Classes');
+  updateSectionOptions();
+}
+function updateSectionOptions(){
+  const branch = fBranch.value, cls = fClass.value;
+  let pool = students;
+  if(branch) pool = pool.filter(s=>s.branch===branch);
+  if(cls) pool = pool.filter(s=>s.class===cls);
+  fillSelect(fSection, uniqueSorted(pool.map(s=>s.section)), 'All Sections');
+}
+
+function activityReady(){ return activityInput.value.trim().length > 0; }
+const debouncedRender = debounce(render, 300);
+function updateActivityStatus(){
+  if(activityReady()){
+    activityStatus.textContent = '✅ Ready to send';
+    activityStatus.className = 'status-pill ok';
+  }else{
+    activityStatus.textContent = '⚠ Enter activity name to enable sending';
+    activityStatus.className = 'status-pill warn';
+  }
+  debouncedRender();
+}
+function refreshActivityHistory(){
+  const activities = uniqueSorted(sentLog.map(l=>l.activity));
+  $('activityHistory').innerHTML = activities.map(a=>'<option value="'+escapeHtml(a)+'"></option>').join('');
+}
+
+function alreadySent(s, activity){
+  return sentLog.some(l => l.phone === s.phone && l.studentName === s.studentName && l.activity.toLowerCase() === activity.toLowerCase());
+}
+function logSend(s, activity){
+  const entry = {
+    studentName: s.studentName, parentName: s.parentName, phone: s.phone,
+    branch: s.branch, class: s.class, section: s.section, activity: activity
+  };
+  sentLog.push(Object.assign({ts: new Date().toISOString()}, entry));
+  logSendToServer(entry);
+}
+
+// ---------- Render Send table ----------
+function waIcon(){
+  return '<svg viewBox="0 0 32 32"><path d="M16.001 2.667c-7.364 0-13.334 5.97-13.334 13.333 0 2.353.62 4.66 1.797 6.686L2.667 29.333l6.8-1.783a13.27 13.27 0 0 0 6.533 1.716h.006c7.363 0 13.333-5.97 13.333-13.333S23.364 2.667 16.001 2.667zm7.797 18.833c-.331.93-1.647 1.703-2.696 1.929-.716.153-1.65.276-4.797-1.03-4.024-1.667-6.61-5.751-6.812-6.017-.196-.267-1.628-2.17-1.628-4.138 0-1.968 1.03-2.933 1.395-3.336.331-.365.72-.457.96-.457.242 0 .484.003.696.014.223.011.523-.084.818.624.331.795 1.126 2.755 1.223 2.958.098.203.163.44.033.706-.13.267-.196.433-.392.667-.196.234-.412.522-.588.702-.196.2-.4.416-.172.816.229.4 1.017 1.678 2.183 2.72 1.5 1.339 2.767 1.754 3.166 1.951.4.196.635.163.868-.098.234-.261.998-1.164 1.264-1.564.267-.4.533-.333.898-.2.365.133 2.318 1.093 2.716 1.29.4.196.665.294.763.457.098.163.098.94-.233 1.87z"/></svg>';
+}
+function buildMessage(s){
+  const activity = activityInput.value.trim();
+  return 'Dear ' + s.parentName + ', greetings from Akshara International School (' + s.branch + ' branch).\n\nWe are happy to share that *' + s.studentName + '* (Class ' + s.class + '-' + s.section + ') participated in *"' + activity + '"* today.\n\nPhotos/videos from the activity are shared below.\n\nWarm regards,\nAkshara International School';
+}
+function render(){
+  const branch = fBranch.value, cls = fClass.value, sec = fSection.value;
+  const search = searchBox.value.trim().toLowerCase();
+  let pool = students;
+  if(branch) pool = pool.filter(s=>s.branch===branch);
+  if(cls) pool = pool.filter(s=>s.class===cls);
+  if(sec) pool = pool.filter(s=>s.section===sec);
+  if(search) pool = pool.filter(s=>s.studentName.toLowerCase().includes(search));
+
+  resultCount.textContent = pool.length + ' student(s) shown';
+
+  if(!dataLoaded){
+    cardList.innerHTML = '';
+    emptyState.style.display = 'block';
+    emptyState.textContent = 'Loading…';
+    return;
+  }
+  if(pool.length === 0){
+    cardList.innerHTML = '';
+    emptyState.style.display = 'block';
+    emptyState.textContent = 'No students found for this filter.';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  const activity = activityInput.value.trim();
+
+  cardList.innerHTML = pool.map(function(s){
+    const idx = students.indexOf(s);
+    const wasSent = activity && alreadySent(s, activity);
+    const btnLabel = wasSent ? 'Resend' : 'Send';
+    const btnClass = wasSent ? 'wa-btn resend' : 'wa-btn';
+    return (
+    '<div class="student-card ' + (wasSent ? 'sent-row' : '') + '">' +
+      '<button class="' + btnClass + '" data-idx="' + idx + '" ' + (activityReady() ? '' : 'disabled') + '>' + waIcon() + ' ' + btnLabel + '</button>' +
+      '<div class="student-info">' +
+        '<div class="student-name">' + escapeHtml(s.studentName) + (wasSent ? '<span class="sent-chip" style="margin-left:8px;">✓ Sent</span>' : '') + '</div>' +
+        '<div class="sub">' + escapeHtml(s.parentName) + ' · +' + s.phone + '</div>' +
+        '<div style="margin-top:4px;"><span class="cls-chip">' + escapeHtml(s.class) + '-' + escapeHtml(s.section) + '</span> <span class="sub">' + escapeHtml(s.branch) + '</span></div>' +
+      '</div>' +
+    '</div>');
+  }).join('');
+}
+
+cardList.addEventListener('click', function(e){
+  const waBtn = e.target.closest('.wa-btn');
+  if(!waBtn) return;
+  if(!activityReady()){
+    showToast('⚠ Enter the activity name first');
+    activityInput.focus();
+    return;
+  }
+  const s = students[waBtn.dataset.idx];
+  const activity = activityInput.value.trim();
+  const msg = encodeURIComponent(buildMessage(s));
+  window.open('https://wa.me/' + s.phone + '?text=' + msg, '_blank');
+  logSend(s, activity);
+  refreshActivityHistory();
+  render();
+});
+
+activityInput.addEventListener('input', updateActivityStatus);
+searchBox.addEventListener('input', debouncedRender);
+fBranch.addEventListener('change', function(){ updateClassOptions(); render(); });
+fClass.addEventListener('change', function(){ updateSectionOptions(); render(); });
+fSection.addEventListener('change', render);
+
+$('btnClearLog').addEventListener('click', async function(){
+  if(!confirm('This permanently deletes the entire shared send log for ALL teachers. Continue?')) return;
+  try{
+    await clearSendLogOnServer();
+    await loadLog();
+    render();
+    renderReports();
+    showToast('🗑 Send log cleared');
+  }catch(err){
+    showToast('⚠ Could not clear log');
+  }
+});
+
+// ---------- Reports ----------
+const rActivity = $('rActivity'), rBranch = $('rBranch');
+
+function populateReportFilters(){
+  const activities = uniqueSorted(sentLog.map(l=>l.activity));
+  const current = rActivity.value;
+  rActivity.innerHTML = '<option value="">All Activities</option>' + activities.map(a=>'<option value="'+escapeHtml(a)+'">'+escapeHtml(a)+'</option>').join('');
+  if(activities.includes(current)) rActivity.value = current;
+
+  const branches = uniqueSorted(students.map(s=>s.branch));
+  const currentB = rBranch.value;
+  rBranch.innerHTML = '<option value="">All Branches</option>' + branches.map(b=>'<option value="'+escapeHtml(b)+'">'+escapeHtml(b)+'</option>').join('');
+  if(branches.includes(currentB)) rBranch.value = currentB;
+}
+function pct(sent, total){ return total === 0 ? 0 : Math.round((sent/total)*100); }
+
+function renderReports(){
+  populateReportFilters();
+  const activityFilter = rActivity.value;
+  const branchFilter = rBranch.value;
+
+  let logPool = sentLog;
+  if(activityFilter) logPool = logPool.filter(l => l.activity.toLowerCase() === activityFilter.toLowerCase());
+  if(branchFilter) logPool = logPool.filter(l => l.branch === branchFilter);
+
+  let studentPool = students;
+  if(branchFilter) studentPool = studentPool.filter(s => s.branch === branchFilter);
+
+  const uniqueSentKeys = new Set(logPool.map(l => l.phone+'|'+l.studentName));
+
+  $('statRow').innerHTML =
+    '<div class="stat-card"><div class="num">' + logPool.length + '</div><div class="lbl">Messages Sent</div></div>' +
+    '<div class="stat-card"><div class="num">' + uniqueSentKeys.size + '</div><div class="lbl">Unique Students Reached</div></div>' +
+    '<div class="stat-card"><div class="num">' + studentPool.length + '</div><div class="lbl">Total Students (filter)</div></div>' +
+    '<div class="stat-card"><div class="num">' + pct(uniqueSentKeys.size, studentPool.length) + '%</div><div class="lbl">Coverage</div></div>';
+
+  const branches = uniqueSorted(students.map(s=>s.branch));
+  const branchRows = branches.filter(b => !branchFilter || b === branchFilter).map(function(b){
+    const totalInBranch = students.filter(s=>s.branch===b).length;
+    const sentKeys = new Set(logPool.filter(l=>l.branch===b).map(l=>l.phone+'|'+l.studentName));
+    const p = pct(sentKeys.size, totalInBranch);
+    return '<tr><td>' + escapeHtml(b) + '</td><td>' + sentKeys.size + '</td><td>' + totalInBranch + '</td>' +
+      '<td><div style="display:flex;align-items:center;gap:8px;"><span>' + p + '%</span><div class="progress-bar" style="flex:1;"><div class="fill" style="width:' + p + '%;"></div></div></div></td></tr>';
+  }).join('');
+  $('branchReportBody').innerHTML = branchRows || '<tr><td colspan="4" class="empty">No data yet</td></tr>';
+
+  const classKeys = uniqueSorted(students.filter(s => !branchFilter || s.branch === branchFilter).map(s => s.branch + '||' + s.class + '||' + s.section));
+  const classRows = classKeys.map(function(key){
+    const parts = key.split('||'); const b = parts[0], c = parts[1], sec = parts[2];
+    const totalInClass = students.filter(s=>s.branch===b && s.class===c && s.section===sec).length;
+    const sentKeys = new Set(logPool.filter(l=>l.branch===b && l.class===c && l.section===sec).map(l=>l.phone+'|'+l.studentName));
+    const p = pct(sentKeys.size, totalInClass);
+    return '<tr><td>' + escapeHtml(b) + '</td><td><span class="cls-chip">' + escapeHtml(c) + '-' + escapeHtml(sec) + '</span></td><td>' + sentKeys.size + '</td><td>' + totalInClass + '</td>' +
+      '<td><div style="display:flex;align-items:center;gap:8px;"><span>' + p + '%</span><div class="progress-bar" style="flex:1;"><div class="fill" style="width:' + p + '%;"></div></div></div></td></tr>';
+  }).join('');
+  $('classReportBody').innerHTML = classRows || '<tr><td colspan="5" class="empty">No data yet</td></tr>';
+
+  const pendingBody = $('pendingBody'), pendingEmpty = $('pendingEmpty');
+  if(!activityFilter){
+    pendingBody.innerHTML = '';
+    pendingEmpty.style.display = 'block';
+    pendingEmpty.textContent = 'Select a specific activity above to see who has not been notified yet.';
+  }else{
+    const sentKeysForActivity = new Set(sentLog.filter(l=>l.activity.toLowerCase()===activityFilter.toLowerCase()).map(l=>l.phone+'|'+l.studentName));
+    const pending = studentPool.filter(s => !sentKeysForActivity.has(s.phone+'|'+s.studentName));
+    if(pending.length === 0){
+      pendingBody.innerHTML = '';
+      pendingEmpty.style.display = 'block';
+      pendingEmpty.textContent = 'All caught up — no pending students for this filter.';
+    }else{
+      pendingEmpty.style.display = 'none';
+      pendingBody.innerHTML = pending.map(function(s){
+        return '<tr><td class="student-name">' + escapeHtml(s.studentName) + '</td>' +
+          '<td><span class="cls-chip">' + escapeHtml(s.class) + '-' + escapeHtml(s.section) + '</span></td>' +
+          '<td>' + escapeHtml(s.branch) + '</td>' +
+          '<td>' + escapeHtml(s.parentName) + ' <span class="pending-tag">Pending</span></td></tr>';
+      }).join('');
+    }
+  }
+
+  const logBody = $('logBody'), logEmpty = $('logEmpty');
+  const displayLog = logPool.slice().reverse().slice(0, 200);
+  if(displayLog.length === 0){
+    logBody.innerHTML = '';
+    logEmpty.style.display = 'block';
+  }else{
+    logEmpty.style.display = 'none';
+    logBody.innerHTML = displayLog.map(function(l){
+      const dt = new Date(l.ts);
+      const dtStr = dt.toLocaleDateString('en-IN') + ' ' + dt.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+      return '<tr><td class="sub">' + dtStr + '</td><td>' + escapeHtml(l.activity) + '</td><td>' + escapeHtml(l.studentName) + '</td>' +
+        '<td><span class="cls-chip">' + escapeHtml(l.class) + '-' + escapeHtml(l.section) + '</span></td><td>' + escapeHtml(l.branch) + '</td></tr>';
+    }).join('');
+  }
+}
+rActivity.addEventListener('change', renderReports);
+rBranch.addEventListener('change', renderReports);
+
+// ---------- Init ----------
+refreshAll(false);
+</script>
+</body>
+</html>
