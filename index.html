@@ -284,12 +284,29 @@ function setSyncState(state, text){
   syncNote.style.borderColor = (state === 'error') ? '#f0a500' : '#cfe0f5';
 }
 
-// ---------- Server calls (Apps Script JSON API via fetch) ----------
+// ---------- Server calls (Apps Script API via JSONP — avoids CORS) ----------
+let jsonpCounter = 0;
+function jsonp(url, params){
+  return new Promise((resolve, reject) => {
+    const cbName = '__jsonpCb' + (jsonpCounter++);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('Request timed out')); }, 15000);
+    function cleanup(){
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+    }
+    window[cbName] = function(data){ cleanup(); resolve(data); };
+    const qs = new URLSearchParams(Object.assign({}, params, { callback: cbName })).toString();
+    script.src = url + '?' + qs;
+    script.onerror = function(){ cleanup(); reject(new Error('Could not reach the API')); };
+    document.body.appendChild(script);
+  });
+}
 async function loadStudents(){
   setSyncState('loading', 'Loading students from Google Sheet…');
   try{
-    const res = await fetch(API_URL + '?action=getStudents');
-    students = await res.json();
+    students = await jsonp(API_URL, { action: 'getStudents' });
   }catch(err){
     showToast('⚠ Could not load student data — check the API URL / Students sheet');
     console.error(err);
@@ -298,26 +315,20 @@ async function loadStudents(){
 }
 async function loadLog(){
   try{
-    const res = await fetch(API_URL + '?action=getSendLog');
-    sentLog = await res.json();
+    sentLog = await jsonp(API_URL, { action: 'getSendLog' });
   }catch(err){
     sentLog = [];
   }
 }
 async function logSendToServer(entry){
   try{
-    await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight
-      body: JSON.stringify(Object.assign({ action: 'logSend' }, entry))
-    });
+    await jsonp(API_URL, Object.assign({ action: 'logSend' }, entry));
   }catch(err){
     showToast('⚠ Sent in WhatsApp, but could not save to log');
   }
 }
 async function clearSendLogOnServer(){
-  const res = await fetch(API_URL + '?action=clearSendLog');
-  return res.json();
+  return jsonp(API_URL, { action: 'clearSendLog' });
 }
 async function refreshAll(showMsg){
   await Promise.all([loadStudents(), loadLog()]);
