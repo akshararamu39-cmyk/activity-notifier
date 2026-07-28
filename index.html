@@ -8,60 +8,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#003d82;
-    --navy-dark:#00285a;
-    --gold:#f0a500;
-    --wa:#25D366;
-    --wa-dark:#1ea952;
-    --bg:#f4f6fa;
-    --card:#ffffff;
-    --border:#e2e6ee;
-    --text:#1c2733;
-    --muted:#6b7686;
+    --navy:#003d82;--navy-dark:#00285a;--gold:#f0a500;--wa:#25D366;--wa-dark:#1ea952;
+    --bg:#f4f6fa;--card:#ffffff;--border:#e2e6ee;--text:#1c2733;--muted:#6b7686;
   }
   *{box-sizing:border-box;}
   body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);}
   .app{max-width:1100px;margin:0 auto;padding:20px 16px 60px;}
-
-  header.top{
-    background:linear-gradient(135deg,var(--navy),var(--navy-dark));
-    color:#fff;border-radius:14px;padding:20px 24px;
-    display:flex;align-items:center;justify-content:space-between;
-    flex-wrap:wrap;gap:12px;margin-bottom:14px;
-  }
+  header.top{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;border-radius:14px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
   header.top h1{font-size:19px;margin:0;font-weight:600;}
   header.top p{margin:4px 0 0;font-size:12.5px;color:#cfe0f5;}
   .badge{background:var(--gold);color:#2b1c00;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
-
   .tabs{display:flex;gap:8px;margin-bottom:16px;}
-  .tab-btn{
-    flex:1;background:#fff;border:1.5px solid var(--border);color:var(--muted);
-    font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;
-    padding:12px;border-radius:10px;cursor:pointer;transition:all .15s;
-  }
+  .tab-btn{flex:1;background:#fff;border:1.5px solid var(--border);color:var(--muted);font-family:'Poppins',sans-serif;font-weight:600;font-size:13px;padding:12px;border-radius:10px;cursor:pointer;transition:all .15s;}
   .tab-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;}
   .tab-panel{display:none;}
   .tab-panel.active{display:block;}
-
   .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
   .card h2{font-size:14px;margin:0 0 12px;color:var(--navy);font-weight:600;display:flex;align-items:center;gap:8px;}
-
   .activity-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
   .activity-bar .field{flex:1;min-width:220px;}
   label{display:block;font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;}
-  input[type=text], select, textarea{
-    width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;
-    font-family:'Poppins',sans-serif;font-size:13.5px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;
-  }
+  input[type=text], select, textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13.5px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;}
   input[type=text]:focus, select:focus, textarea:focus{border-color:var(--navy);}
   input#activityName{font-weight:600;}
   .status-pill{font-size:11.5px;font-weight:600;padding:9px 14px;border-radius:8px;white-space:nowrap;}
   .status-pill.ok{background:#e6f8ee;color:var(--wa-dark);}
   .status-pill.warn{background:#fff3e0;color:#b06a00;}
-
   .filters{display:flex;gap:12px;flex-wrap:wrap;}
   .filters .field{flex:1;min-width:160px;}
-
+  .import-toggle{background:none;border:1.5px solid var(--border);color:var(--navy);font-family:'Poppins',sans-serif;font-weight:600;font-size:12.5px;padding:8px 14px;border-radius:8px;cursor:pointer;}
+  .import-toggle:hover{background:#f0f4fa;}
+  #importPanel{display:none;margin-top:14px;}
+  #importPanel.open{display:block;}
+  .import-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;}
   .btn{font-family:'Poppins',sans-serif;font-weight:600;font-size:12.5px;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;}
   .btn-primary{background:var(--navy);color:#fff;}
   .btn-primary:hover{background:var(--navy-dark);}
@@ -70,41 +49,25 @@
   .btn-danger{background:#fdeceb;color:#c0392b;}
   .hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5;}
   code{background:#f0f4fa;padding:1px 5px;border-radius:4px;font-size:11px;}
-
-  .table-wrap{overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap;}
-  tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
-  tbody tr:hover{background:#fafbfd;}
-  tbody tr.sent-row{background:#f4fbf7;}
+  .student-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+  .student-card:last-child{border-bottom:none;}
+  .student-card.sent-row{background:#f4fbf7;border-radius:10px;padding-left:10px;padding-right:10px;}
+  .student-info{flex:1;min-width:180px;}
   .student-name{font-weight:600;color:var(--text);}
   .sub{color:var(--muted);font-size:11.5px;}
   .cls-chip{background:#eef3fb;color:var(--navy);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
   .sent-chip{background:#e6f8ee;color:var(--wa-dark);font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-block;margin-top:4px;}
-  .wa-btn{display:inline-flex;align-items:center;gap:6px;background:var(--wa);color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:600;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .15s, opacity .15s;}
+  .wa-btn{display:inline-flex;align-items:center;gap:6px;background:var(--wa);color:#fff;border:none;padding:8px 14px;border-radius:20px;font-weight:600;font-size:12px;cursor:pointer;font-family:'Poppins',sans-serif;transition:background .15s, opacity .15s;flex-shrink:0;}
   .wa-btn:hover{background:var(--wa-dark);}
   .wa-btn:disabled{background:#cfd6e0;cursor:not-allowed;opacity:.7;}
   .wa-btn.resend{background:#fff;color:var(--wa-dark);border:1.5px solid var(--wa);}
   .wa-btn svg{width:14px;height:14px;fill:#fff;}
   .wa-btn.resend svg{fill:var(--wa-dark);}
-  .student-card{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:14px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap;
-  }
-  .student-card:last-child{border-bottom:none;}
-  .student-card.sent-row{background:#f4fbf7;border-radius:10px;padding-left:10px;padding-right:10px;}
-  .student-info{flex:1;min-width:180px;}
-  .student-card .wa-btn{flex-shrink:0;}
   .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
   .count-tag{font-size:12px;color:var(--muted);font-weight:500;}
   .footer-note{text-align:center;font-size:11.5px;color:var(--muted);margin-top:24px;}
-  .toast{
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c2733;color:#fff;
-    padding:11px 20px;border-radius:8px;font-size:12.5px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.2);
-    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:999;
-  }
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c2733;color:#fff;padding:11px 20px;border-radius:8px;font-size:12.5px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:999;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
-
   .stat-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
   .stat-card{flex:1;min-width:150px;background:linear-gradient(135deg,#fff,#f7f9fc);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
   .stat-card .num{font-size:26px;font-weight:700;color:var(--navy);}
@@ -112,15 +75,12 @@
   .progress-bar{width:100%;height:8px;background:#eef1f6;border-radius:6px;overflow:hidden;margin-top:4px;}
   .progress-bar .fill{height:100%;background:var(--wa);border-radius:6px;}
   .pending-tag{background:#fff3e0;color:#b06a00;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;}
-  .sync-note{
-    display:flex;align-items:center;gap:10px;background:#eef6ff;border:1px solid #cfe0f5;
-    border-radius:10px;padding:10px 14px;font-size:12px;color:var(--navy);margin-bottom:14px;flex-wrap:wrap;
-  }
-  .sync-note b{white-space:nowrap;}
-  .spinner{
-    width:14px;height:14px;border:2px solid #cfe0f5;border-top-color:var(--navy);border-radius:50%;
-    display:inline-block;animation:spin .7s linear infinite;
-  }
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap;}
+  tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  .sync-note{display:flex;align-items:center;gap:10px;background:#eef6ff;border:1px solid #cfe0f5;border-radius:10px;padding:10px 14px;font-size:12px;color:var(--navy);margin-bottom:14px;flex-wrap:wrap;}
+  .spinner{width:14px;height:14px;border:2px solid #cfe0f5;border-top-color:var(--navy);border-radius:50%;display:inline-block;animation:spin .7s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
@@ -137,8 +97,7 @@
 
   <div class="sync-note" id="syncNote">
     <span class="spinner" id="syncSpinner"></span>
-    <span id="syncText">Loading students from Google Sheet…</span>
-    <button class="btn btn-outline" id="btnRefresh" style="margin-left:auto;">🔄 Refresh Data</button>
+    <span id="syncText">Connecting to live database…</span>
   </div>
 
   <div class="tabs">
@@ -171,10 +130,21 @@
         <label>Search Student Name</label>
         <input type="text" id="searchBox" placeholder="Type a student's name…">
       </div>
-      <div style="margin-top:14px;">
+      <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <button class="import-toggle" id="toggleImport">＋ Import / Manage Student Data</button>
         <span class="count-tag" id="resultCount"></span>
       </div>
-      <div class="hint">Student data comes directly from your school's Google Sheet. To add, remove, or fix a student, edit the Sheet — then tap "Refresh Data" above.</div>
+      <div id="importPanel">
+        <label style="margin-top:10px;">Paste student data (one per line)</label>
+        <textarea id="importBox" rows="6" placeholder="StudentName, ParentName, Phone, Branch, Class, Section
+Aarav Reddy, Suresh Reddy, 9876543210, LB NAGAR, 5, A"></textarea>
+        <div class="hint">Format: <code>Student Name, Parent Name, 10-digit Phone, Branch, Class, Section</code> — one per line. Paste the export generated by your Google Sheet's "Generate Import Data" menu. Duplicates (same phone+student) are automatically merged, not duplicated.</div>
+        <div class="import-row">
+          <button class="btn btn-primary" id="btnImport">Add to Student List</button>
+          <button class="btn btn-danger" id="btnClearStudents">Clear All Student Data</button>
+        </div>
+        <div class="hint">This writes to a shared live database — every teacher sees updates within seconds, automatically.</div>
+      </div>
     </div>
 
     <div class="card">
@@ -187,7 +157,6 @@
   </div>
 
   <div class="tab-panel" id="tab-reports">
-
     <div class="card">
       <h2>Filter report</h2>
       <div class="filters">
@@ -195,44 +164,25 @@
         <div class="field"><label>Branch</label><select id="rBranch"></select></div>
       </div>
     </div>
-
     <div class="stat-row" id="statRow"></div>
-
     <div class="card">
       <h2>Branch-wise coverage</h2>
-      <div class="table-wrap">
-        <table><thead><tr><th>Branch</th><th>Sent</th><th>Total Students</th><th>Coverage</th></tr></thead>
-        <tbody id="branchReportBody"></tbody></table>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Branch</th><th>Sent</th><th>Total Students</th><th>Coverage</th></tr></thead><tbody id="branchReportBody"></tbody></table></div>
     </div>
-
     <div class="card">
       <h2>Class-wise coverage</h2>
-      <div class="table-wrap">
-        <table><thead><tr><th>Branch</th><th>Class-Section</th><th>Sent</th><th>Total Students</th><th>Coverage</th></tr></thead>
-        <tbody id="classReportBody"></tbody></table>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Branch</th><th>Class-Section</th><th>Sent</th><th>Total Students</th><th>Coverage</th></tr></thead><tbody id="classReportBody"></tbody></table></div>
     </div>
-
     <div class="card">
       <h2>Pending (not yet notified for selected activity)</h2>
-      <div class="table-wrap">
-        <table><thead><tr><th>Student</th><th>Class</th><th>Branch</th><th>Parent</th></tr></thead>
-        <tbody id="pendingBody"></tbody></table>
-        <div class="empty" id="pendingEmpty" style="display:none;"></div>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Student</th><th>Class</th><th>Branch</th><th>Parent</th></tr></thead><tbody id="pendingBody"></tbody></table>
+      <div class="empty" id="pendingEmpty" style="display:none;"></div></div>
     </div>
-
     <div class="card">
       <h2>Send log</h2>
-      <div class="table-wrap">
-        <table><thead><tr><th>Date/Time</th><th>Activity</th><th>Student</th><th>Class</th><th>Branch</th></tr></thead>
-        <tbody id="logBody"></tbody></table>
-        <div class="empty" id="logEmpty" style="display:none;">No messages sent yet.</div>
-      </div>
-      <div style="margin-top:10px;">
-        <button class="btn btn-danger" id="btnClearLog">Clear Send Log</button>
-      </div>
+      <div class="table-wrap"><table><thead><tr><th>Date/Time</th><th>Activity</th><th>Student</th><th>Class</th><th>Branch</th></tr></thead><tbody id="logBody"></tbody></table>
+      <div class="empty" id="logEmpty" style="display:none;">No messages sent yet.</div></div>
+      <div style="margin-top:10px;"><button class="btn btn-danger" id="btnClearLog">Clear Send Log</button></div>
     </div>
   </div>
 
@@ -240,15 +190,34 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
-// ===== CONFIGURE THIS: paste your Apps Script Web App URL below =====
-const API_URL = 'https://script.google.com/macros/s/AKfycbzIYOES4bR76n1Chpvmvnzgkvo1tZiBdn8L8wAGE3Xx_71-vkK0BthnyWoGt6S6Tx_Y/exec';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, deleteDoc, addDoc,
+  onSnapshot, getDocs, writeBatch, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// ===== CONFIGURE THIS: paste your Firebase config object here =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCB5w1TbUpzfmAoDy0uO_uIayd9wo1tuIw",
+  authDomain: "akshara-whatsapp-messages.firebaseapp.com",
+  projectId: "akshara-whatsapp-messages",
+  storageBucket: "akshara-whatsapp-messages.firebasestorage.app",
+  messagingSenderId: "945628798917",
+  appId: "1:945628798917:web:0598db9c4f2c931cdcf5ac"
+};
 // =======================================================================
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const studentsCol = collection(db, 'students');
+const logCol = collection(db, 'sendLog');
 
 const PRESET_BRANCH = new URLSearchParams(window.location.search).get('branch') || '';
 let students = [];
 let sentLog = [];
 let dataLoaded = false;
+let logLoaded = false;
 
 const $ = id => document.getElementById(id);
 const cardList = $('cardList');
@@ -272,76 +241,41 @@ function escapeHtml(str){
 }
 function debounce(fn, delay){
   let t = null;
-  return function(){
-    clearTimeout(t);
-    t = setTimeout(fn, delay);
-  };
+  return function(){ clearTimeout(t); t = setTimeout(fn, delay); };
 }
-
 function setSyncState(state, text){
   syncText.textContent = text;
   syncSpinner.style.display = (state === 'loading') ? 'inline-block' : 'none';
   syncNote.style.borderColor = (state === 'error') ? '#f0a500' : '#cfe0f5';
 }
 
-// ---------- Server calls (Apps Script API via JSONP — avoids CORS) ----------
-let jsonpCounter = 0;
-function jsonp(url, params){
-  return new Promise((resolve, reject) => {
-    const cbName = '__jsonpCb' + (jsonpCounter++);
-    const script = document.createElement('script');
-    const timer = setTimeout(() => { cleanup(); reject(new Error('Request timed out')); }, 15000);
-    function cleanup(){
-      delete window[cbName];
-      if(script.parentNode) script.parentNode.removeChild(script);
-      clearTimeout(timer);
-    }
-    window[cbName] = function(data){ cleanup(); resolve(data); };
-    const qs = new URLSearchParams(Object.assign({}, params, { callback: cbName })).toString();
-    script.src = url + '?' + qs;
-    script.onerror = function(){ cleanup(); reject(new Error('Could not reach the API')); };
-    document.body.appendChild(script);
-  });
-}
-async function loadStudents(){
-  setSyncState('loading', 'Loading students from Google Sheet…');
-  try{
-    students = await jsonp(API_URL, { action: 'getStudents' });
-  }catch(err){
-    showToast('⚠ Could not load student data — check the API URL / Students sheet');
-    console.error(err);
-    students = [];
-  }
-}
-async function loadLog(){
-  try{
-    sentLog = await jsonp(API_URL, { action: 'getSendLog' });
-  }catch(err){
-    sentLog = [];
-  }
-}
-async function logSendToServer(entry){
-  try{
-    await jsonp(API_URL, Object.assign({ action: 'logSend' }, entry));
-  }catch(err){
-    showToast('⚠ Sent in WhatsApp, but could not save to log');
-  }
-}
-async function clearSendLogOnServer(){
-  return jsonp(API_URL, { action: 'clearSendLog' });
-}
-async function refreshAll(showMsg){
-  await Promise.all([loadStudents(), loadLog()]);
+// ---------- Live Firestore listeners ----------
+onSnapshot(studentsCol, function(snapshot){
+  students = snapshot.docs.map(d => d.data());
   dataLoaded = true;
-  setSyncState('ok', 'Synced with Google Sheet · ' + students.length + ' students');
+  setSyncState('ok', 'Live · ' + students.length + ' students synced');
   populateFilters();
   applyPresetBranch();
-  refreshActivityHistory();
-  updateActivityStatus();
   render();
-  if(document.getElementById('tab-reports').classList.contains('active')) renderReports();
-  if(showMsg) showToast('✅ Data refreshed');
-}
+  if($('tab-reports').classList.contains('active')) renderReports();
+}, function(err){
+  console.error(err);
+  setSyncState('error', 'Could not connect — check your Firebase config');
+  showToast('⚠ Could not load student data — check Firebase config/rules');
+});
+
+onSnapshot(logCol, function(snapshot){
+  sentLog = snapshot.docs.map(function(d){
+    const data = d.data();
+    let ts = data.ts || new Date().toISOString();
+    return Object.assign({}, data, { ts: ts, id: d.id });
+  });
+  logLoaded = true;
+  refreshActivityHistory();
+  render();
+  if($('tab-reports').classList.contains('active')) renderReports();
+}, function(err){ console.error(err); });
+
 function applyPresetBranch(){
   if(!PRESET_BRANCH) return;
   const branches = uniqueSorted(students.map(s=>s.branch));
@@ -356,8 +290,8 @@ function applyPresetBranch(){
 }
 
 // ---------- Tabs ----------
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
@@ -365,7 +299,55 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(btn.dataset.tab === 'reports') renderReports();
   });
 });
-$('btnRefresh').addEventListener('click', ()=>refreshAll(true));
+
+// ---------- Import ----------
+function parseLine(line){
+  const parts = line.includes('\t') ? line.split('\t') : line.split(',');
+  return parts.map(p => p.trim());
+}
+function normalizePhone(raw){
+  let digits = (raw || '').replace(/\D/g,'');
+  if(digits.length === 10) return '91' + digits;
+  if(digits.length === 12 && digits.startsWith('91')) return digits;
+  if(digits.length === 11 && digits.startsWith('0')) return '91' + digits.slice(1);
+  return digits;
+}
+function safeId(str){
+  return str.toString().toLowerCase().replace(/[^a-z0-9]+/g,'_').slice(0,120);
+}
+async function importData(){
+  const raw = $('importBox').value.trim();
+  if(!raw){ showToast('Paste some data first'); return; }
+  const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+  let added = 0, skipped = 0;
+  showToast('Importing…');
+  for(const line of lines){
+    const cols = parseLine(line);
+    if(cols.length < 6){ skipped++; continue; }
+    const studentName = cols[0], parentName = cols[1], phoneRaw = cols[2], branch = cols[3], cls = cols[4], section = cols[5];
+    if(studentName.toLowerCase() === 'studentname' || studentName.toLowerCase() === 'student name'){ continue; }
+    const phone = normalizePhone(phoneRaw);
+    if(!studentName || !phone || phone.length < 12){ skipped++; continue; }
+    const id = safeId(phone + '_' + studentName);
+    try{
+      await setDoc(doc(db, 'students', id), {
+        studentName: studentName, parentName: parentName, phone: phone,
+        branch: branch || 'Main', class: cls || '', section: section || ''
+      });
+      added++;
+    }catch(err){ skipped++; }
+  }
+  $('importBox').value = '';
+  showToast('✅ Imported ' + added + ' student(s)' + (skipped ? (', skipped ' + skipped) : ''));
+}
+async function clearAllStudents(){
+  if(!confirm('This permanently deletes ALL student data from the live database. Continue?')) return;
+  const snap = await getDocs(studentsCol);
+  const batch = writeBatch(db);
+  snap.docs.forEach(d => batch.delete(d.ref));
+  await batch.commit();
+  showToast('🗑 All student data cleared');
+}
 
 // ---------- Filters ----------
 function uniqueSorted(arr){
@@ -379,7 +361,7 @@ function fillSelect(sel, values, allLabel){
 function populateFilters(){
   const branches = uniqueSorted(students.map(s=>s.branch));
   fillSelect(fBranch, branches, 'All Branches');
-  branchCount.textContent = students.length + ' students · ' + branches.length + ' branch(es)';
+  if(!fBranch.disabled) branchCount.textContent = students.length + ' students · ' + branches.length + ' branch(es)';
   updateClassOptions();
 }
 function updateClassOptions(){
@@ -412,20 +394,22 @@ function refreshActivityHistory(){
   const activities = uniqueSorted(sentLog.map(l=>l.activity));
   $('activityHistory').innerHTML = activities.map(a=>'<option value="'+escapeHtml(a)+'"></option>').join('');
 }
-
 function alreadySent(s, activity){
-  return sentLog.some(l => l.phone === s.phone && l.studentName === s.studentName && l.activity.toLowerCase() === activity.toLowerCase());
+  return sentLog.some(l => l.phone === s.phone && l.studentName === s.studentName && (l.activity||'').toLowerCase() === activity.toLowerCase());
 }
-function logSend(s, activity){
-  const entry = {
-    studentName: s.studentName, parentName: s.parentName, phone: s.phone,
-    branch: s.branch, class: s.class, section: s.section, activity: activity
-  };
-  sentLog.push(Object.assign({ts: new Date().toISOString()}, entry));
-  logSendToServer(entry);
+async function logSend(s, activity){
+  try{
+    await addDoc(logCol, {
+      ts: new Date().toISOString(),
+      studentName: s.studentName, parentName: s.parentName, phone: s.phone,
+      branch: s.branch, class: s.class, section: s.section, activity: activity
+    });
+  }catch(err){
+    showToast('⚠ Sent in WhatsApp, but could not save to log');
+  }
 }
 
-// ---------- Render Send table ----------
+// ---------- Render ----------
 function waIcon(){
   return '<svg viewBox="0 0 32 32"><path d="M16.001 2.667c-7.364 0-13.334 5.97-13.334 13.333 0 2.353.62 4.66 1.797 6.686L2.667 29.333l6.8-1.783a13.27 13.27 0 0 0 6.533 1.716h.006c7.363 0 13.333-5.97 13.333-13.333S23.364 2.667 16.001 2.667zm7.797 18.833c-.331.93-1.647 1.703-2.696 1.929-.716.153-1.65.276-4.797-1.03-4.024-1.667-6.61-5.751-6.812-6.017-.196-.267-1.628-2.17-1.628-4.138 0-1.968 1.03-2.933 1.395-3.336.331-.365.72-.457.96-.457.242 0 .484.003.696.014.223.011.523-.084.818.624.331.795 1.126 2.755 1.223 2.958.098.203.163.44.033.706-.13.267-.196.433-.392.667-.196.234-.412.522-.588.702-.196.2-.4.416-.172.816.229.4 1.017 1.678 2.183 2.72 1.5 1.339 2.767 1.754 3.166 1.951.4.196.635.163.868-.098.234-.261.998-1.164 1.264-1.564.267-.4.533-.333.898-.2.365.133 2.318 1.093 2.716 1.29.4.196.665.294.763.457.098.163.098.94-.233 1.87z"/></svg>';
 }
@@ -490,8 +474,6 @@ cardList.addEventListener('click', function(e){
   const msg = encodeURIComponent(buildMessage(s));
   window.open('https://wa.me/' + s.phone + '?text=' + msg, '_blank');
   logSend(s, activity);
-  refreshActivityHistory();
-  render();
 });
 
 activityInput.addEventListener('input', updateActivityStatus);
@@ -500,47 +482,41 @@ fBranch.addEventListener('change', function(){ updateClassOptions(); render(); }
 fClass.addEventListener('change', function(){ updateSectionOptions(); render(); });
 fSection.addEventListener('change', render);
 
+$('toggleImport').addEventListener('click', function(){ $('importPanel').classList.toggle('open'); });
+$('btnImport').addEventListener('click', importData);
+$('btnClearStudents').addEventListener('click', clearAllStudents);
+
 $('btnClearLog').addEventListener('click', async function(){
   if(!confirm('This permanently deletes the entire shared send log for ALL teachers. Continue?')) return;
-  try{
-    await clearSendLogOnServer();
-    await loadLog();
-    render();
-    renderReports();
-    showToast('🗑 Send log cleared');
-  }catch(err){
-    showToast('⚠ Could not clear log');
-  }
+  const snap = await getDocs(logCol);
+  const batch = writeBatch(db);
+  snap.docs.forEach(d => batch.delete(d.ref));
+  await batch.commit();
+  showToast('🗑 Send log cleared');
 });
 
 // ---------- Reports ----------
 const rActivity = $('rActivity'), rBranch = $('rBranch');
-
 function populateReportFilters(){
   const activities = uniqueSorted(sentLog.map(l=>l.activity));
   const current = rActivity.value;
   rActivity.innerHTML = '<option value="">All Activities</option>' + activities.map(a=>'<option value="'+escapeHtml(a)+'">'+escapeHtml(a)+'</option>').join('');
   if(activities.includes(current)) rActivity.value = current;
-
   const branches = uniqueSorted(students.map(s=>s.branch));
   const currentB = rBranch.value;
   rBranch.innerHTML = '<option value="">All Branches</option>' + branches.map(b=>'<option value="'+escapeHtml(b)+'">'+escapeHtml(b)+'</option>').join('');
   if(branches.includes(currentB)) rBranch.value = currentB;
 }
 function pct(sent, total){ return total === 0 ? 0 : Math.round((sent/total)*100); }
-
 function renderReports(){
   populateReportFilters();
   const activityFilter = rActivity.value;
   const branchFilter = rBranch.value;
-
   let logPool = sentLog;
-  if(activityFilter) logPool = logPool.filter(l => l.activity.toLowerCase() === activityFilter.toLowerCase());
+  if(activityFilter) logPool = logPool.filter(l => (l.activity||'').toLowerCase() === activityFilter.toLowerCase());
   if(branchFilter) logPool = logPool.filter(l => l.branch === branchFilter);
-
   let studentPool = students;
   if(branchFilter) studentPool = studentPool.filter(s => s.branch === branchFilter);
-
   const uniqueSentKeys = new Set(logPool.map(l => l.phone+'|'+l.studentName));
 
   $('statRow').innerHTML =
@@ -576,7 +552,7 @@ function renderReports(){
     pendingEmpty.style.display = 'block';
     pendingEmpty.textContent = 'Select a specific activity above to see who has not been notified yet.';
   }else{
-    const sentKeysForActivity = new Set(sentLog.filter(l=>l.activity.toLowerCase()===activityFilter.toLowerCase()).map(l=>l.phone+'|'+l.studentName));
+    const sentKeysForActivity = new Set(sentLog.filter(l=>(l.activity||'').toLowerCase()===activityFilter.toLowerCase()).map(l=>l.phone+'|'+l.studentName));
     const pending = studentPool.filter(s => !sentKeysForActivity.has(s.phone+'|'+s.studentName));
     if(pending.length === 0){
       pendingBody.innerHTML = '';
@@ -594,7 +570,7 @@ function renderReports(){
   }
 
   const logBody = $('logBody'), logEmpty = $('logEmpty');
-  const displayLog = logPool.slice().reverse().slice(0, 200);
+  const displayLog = logPool.slice().sort(function(a,b){ return new Date(b.ts) - new Date(a.ts); }).slice(0, 200);
   if(displayLog.length === 0){
     logBody.innerHTML = '';
     logEmpty.style.display = 'block';
@@ -610,9 +586,6 @@ function renderReports(){
 }
 rActivity.addEventListener('change', renderReports);
 rBranch.addEventListener('change', renderReports);
-
-// ---------- Init ----------
-refreshAll(false);
 </script>
 </body>
 </html>
