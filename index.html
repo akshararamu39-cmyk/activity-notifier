@@ -319,26 +319,43 @@ async function importData(){
   const raw = $('importBox').value.trim();
   if(!raw){ showToast('Paste some data first'); return; }
   const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
-  let added = 0, skipped = 0;
-  showToast('Importing…');
-  for(const line of lines){
+
+  const entries = [];
+  let skipped = 0;
+  lines.forEach(function(line){
     const cols = parseLine(line);
-    if(cols.length < 6){ skipped++; continue; }
+    if(cols.length < 6){ skipped++; return; }
     const studentName = cols[0], parentName = cols[1], phoneRaw = cols[2], branch = cols[3], cls = cols[4], section = cols[5];
-    if(studentName.toLowerCase() === 'studentname' || studentName.toLowerCase() === 'student name'){ continue; }
+    if(studentName.toLowerCase() === 'studentname' || studentName.toLowerCase() === 'student name'){ return; }
     const phone = normalizePhone(phoneRaw);
-    if(!studentName || !phone || phone.length < 12){ skipped++; continue; }
-    const id = safeId(phone + '_' + studentName);
+    if(!studentName || !phone || phone.length < 12){ skipped++; return; }
+    entries.push({
+      id: safeId(phone + '_' + studentName),
+      data: { studentName: studentName, parentName: parentName, phone: phone, branch: branch || 'Main', class: cls || '', section: section || '' }
+    });
+  });
+
+  if(entries.length === 0){ showToast('No valid rows found to import'); return; }
+
+  const CHUNK = 400; // Firestore batch limit is 500 writes; 400 leaves headroom
+  let added = 0;
+  showToast('Importing 0 / ' + entries.length + '…');
+  for(let i = 0; i < entries.length; i += CHUNK){
+    const chunk = entries.slice(i, i + CHUNK);
+    const batch = writeBatch(db);
+    chunk.forEach(function(entry){ batch.set(doc(db, 'students', entry.id), entry.data); });
     try{
-      await setDoc(doc(db, 'students', id), {
-        studentName: studentName, parentName: parentName, phone: phone,
-        branch: branch || 'Main', class: cls || '', section: section || ''
-      });
-      added++;
-    }catch(err){ skipped++; }
+      await batch.commit();
+      added += chunk.length;
+      showToast('Importing ' + added + ' / ' + entries.length + '…');
+    }catch(err){
+      console.error(err);
+      showToast('⚠ Import stopped at ' + added + ' of ' + entries.length + ' — ' + (err.message || 'unknown error'));
+      return; // stop here so the error is visible, rather than silently continuing
+    }
   }
   $('importBox').value = '';
-  showToast('✅ Imported ' + added + ' student(s)' + (skipped ? (', skipped ' + skipped) : ''));
+  showToast('✅ Imported ' + added + ' student(s)' + (skipped ? (', skipped ' + skipped + ' invalid row(s)') : ''));
 }
 async function clearAllStudents(){
   if(!confirm('This permanently deletes ALL student data from the live database. Continue?')) return;
