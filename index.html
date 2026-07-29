@@ -357,13 +357,32 @@ async function importData(){
   $('importBox').value = '';
   showToast('✅ Imported ' + added + ' student(s)' + (skipped ? (', skipped ' + skipped + ' invalid row(s)') : ''));
 }
+async function deleteAllDocsInChunks(colRef, label){
+  const snap = await getDocs(colRef);
+  const docs = snap.docs;
+  if(docs.length === 0){ showToast('Nothing to delete'); return; }
+  const CHUNK = 400; // Firestore batch limit is 500 operations
+  let deleted = 0;
+  showToast('Deleting 0 / ' + docs.length + '…');
+  for(let i = 0; i < docs.length; i += CHUNK){
+    const chunk = docs.slice(i, i + CHUNK);
+    const batch = writeBatch(db);
+    chunk.forEach(function(d){ batch.delete(d.ref); });
+    try{
+      await batch.commit();
+      deleted += chunk.length;
+      showToast('Deleting ' + deleted + ' / ' + docs.length + '…');
+    }catch(err){
+      console.error(err);
+      showToast('⚠ Delete stopped at ' + deleted + ' of ' + docs.length + ' — ' + (err.message || 'unknown error'));
+      return;
+    }
+  }
+  showToast('🗑 ' + label + ' cleared (' + deleted + ' record(s))');
+}
 async function clearAllStudents(){
   if(!confirm('This permanently deletes ALL student data from the live database. Continue?')) return;
-  const snap = await getDocs(studentsCol);
-  const batch = writeBatch(db);
-  snap.docs.forEach(d => batch.delete(d.ref));
-  await batch.commit();
-  showToast('🗑 All student data cleared');
+  await deleteAllDocsInChunks(studentsCol, 'All student data');
 }
 
 // ---------- Filters ----------
@@ -505,11 +524,7 @@ $('btnClearStudents').addEventListener('click', clearAllStudents);
 
 $('btnClearLog').addEventListener('click', async function(){
   if(!confirm('This permanently deletes the entire shared send log for ALL teachers. Continue?')) return;
-  const snap = await getDocs(logCol);
-  const batch = writeBatch(db);
-  snap.docs.forEach(d => batch.delete(d.ref));
-  await batch.commit();
-  showToast('🗑 Send log cleared');
+  await deleteAllDocsInChunks(logCol, 'Send log');
 });
 
 // ---------- Reports ----------
