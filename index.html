@@ -108,14 +108,19 @@
   <div class="tab-panel active" id="tab-send">
 
     <div class="card">
-      <h2>1. Enter today's activity</h2>
+      <h2>1. Enter your name and today's activity</h2>
       <div class="activity-bar">
         <div class="field">
-          <label for="activityName">Activity Name (required before sending)</label>
+          <label for="teacherName">Your Name (Teacher)</label>
+          <input type="text" id="teacherName" placeholder="e.g. Priya Sharma" list="teacherHistory">
+          <datalist id="teacherHistory"></datalist>
+        </div>
+        <div class="field">
+          <label for="activityName">Activity Name</label>
           <input type="text" id="activityName" placeholder="e.g. Annual Sports Day, Science Exhibition, Yoga Session" list="activityHistory">
           <datalist id="activityHistory"></datalist>
         </div>
-        <div id="activityStatus" class="status-pill warn">⚠ Enter activity name to enable sending</div>
+        <div id="activityStatus" class="status-pill warn">⚠ Enter your name and activity to enable sending</div>
       </div>
     </div>
 
@@ -160,8 +165,22 @@ Aarav Reddy, Suresh Reddy, 9876543210, LB NAGAR, 5, A"></textarea>
     <div class="card">
       <h2>Filter report</h2>
       <div class="filters">
+        <div class="field"><label>Date Range</label>
+          <select id="rDateRange">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="last7">Last 7 Days</option>
+            <option value="thismonth">This Month</option>
+            <option value="custom">Custom Range…</option>
+          </select>
+        </div>
         <div class="field"><label>Activity</label><select id="rActivity"></select></div>
         <div class="field"><label>Branch</label><select id="rBranch"></select></div>
+      </div>
+      <div class="filters" id="rCustomDates" style="display:none;margin-top:12px;">
+        <div class="field"><label>From</label><input type="date" id="rDateFrom"></div>
+        <div class="field"><label>To</label><input type="date" id="rDateTo"></div>
       </div>
     </div>
     <div class="stat-row" id="statRow"></div>
@@ -180,7 +199,7 @@ Aarav Reddy, Suresh Reddy, 9876543210, LB NAGAR, 5, A"></textarea>
     </div>
     <div class="card">
       <h2>Send log</h2>
-      <div class="table-wrap"><table><thead><tr><th>Date/Time</th><th>Activity</th><th>Student</th><th>Class</th><th>Branch</th></tr></thead><tbody id="logBody"></tbody></table>
+      <div class="table-wrap"><table><thead><tr><th>Date/Time</th><th>Teacher</th><th>Activity</th><th>Student</th><th>Class</th><th>Branch</th></tr></thead><tbody id="logBody"></tbody></table>
       <div class="empty" id="logEmpty" style="display:none;">No messages sent yet.</div></div>
       <div style="margin-top:10px;"><button class="btn btn-danger" id="btnClearLog">Clear Send Log</button></div>
     </div>
@@ -224,6 +243,15 @@ const cardList = $('cardList');
 const searchBox = $('searchBox');
 const fBranch = $('fBranch'), fClass = $('fClass'), fSection = $('fSection');
 const activityInput = $('activityName');
+const teacherInput = $('teacherName');
+// Remember the teacher's name on this device after they type it once
+try{
+  const savedName = localStorage.getItem('teacherName');
+  if(savedName) teacherInput.value = savedName;
+}catch(e){}
+teacherInput.addEventListener('change', function(){
+  try{ localStorage.setItem('teacherName', teacherInput.value.trim()); }catch(e){}
+});
 const activityStatus = $('activityStatus');
 const emptyState = $('emptyState');
 const branchCount = $('branchCount');
@@ -414,14 +442,14 @@ function updateSectionOptions(){
   fillSelect(fSection, uniqueSorted(pool.map(s=>s.section)), 'All Sections');
 }
 
-function activityReady(){ return activityInput.value.trim().length > 0; }
+function activityReady(){ return activityInput.value.trim().length > 0 && teacherInput.value.trim().length > 0; }
 const debouncedRender = debounce(render, 300);
 function updateActivityStatus(){
   if(activityReady()){
     activityStatus.textContent = '✅ Ready to send';
     activityStatus.className = 'status-pill ok';
   }else{
-    activityStatus.textContent = '⚠ Enter activity name to enable sending';
+    activityStatus.textContent = '⚠ Enter your name and activity to enable sending';
     activityStatus.className = 'status-pill warn';
   }
   debouncedRender();
@@ -429,17 +457,21 @@ function updateActivityStatus(){
 function refreshActivityHistory(){
   const activities = uniqueSorted(sentLog.map(l=>l.activity));
   $('activityHistory').innerHTML = activities.map(a=>'<option value="'+escapeHtml(a)+'"></option>').join('');
+  const teachers = uniqueSorted(sentLog.map(l=>l.teacherName));
+  $('teacherHistory').innerHTML = teachers.map(t=>'<option value="'+escapeHtml(t)+'"></option>').join('');
 }
 function alreadySent(s, activity){
   return sentLog.some(l => l.phone === s.phone && l.studentName === s.studentName && (l.activity||'').toLowerCase() === activity.toLowerCase());
 }
-async function logSend(s, activity){
+async function logSend(s, activity, teacherName){
+  const entry = {
+    ts: new Date().toISOString(),
+    studentName: s.studentName, parentName: s.parentName, phone: s.phone,
+    branch: s.branch, class: s.class, section: s.section, activity: activity,
+    teacherName: teacherName
+  };
   try{
-    await addDoc(logCol, {
-      ts: new Date().toISOString(),
-      studentName: s.studentName, parentName: s.parentName, phone: s.phone,
-      branch: s.branch, class: s.class, section: s.section, activity: activity
-    });
+    await addDoc(logCol, entry);
   }catch(err){
     showToast('⚠ Sent in WhatsApp, but could not save to log');
   }
@@ -501,18 +533,20 @@ cardList.addEventListener('click', function(e){
   const waBtn = e.target.closest('.wa-btn');
   if(!waBtn) return;
   if(!activityReady()){
-    showToast('⚠ Enter the activity name first');
-    activityInput.focus();
+    showToast('⚠ Enter your name and the activity name first');
+    if(!teacherInput.value.trim()) teacherInput.focus(); else activityInput.focus();
     return;
   }
   const s = students[waBtn.dataset.idx];
   const activity = activityInput.value.trim();
+  const teacherName = teacherInput.value.trim();
   const msg = encodeURIComponent(buildMessage(s));
   window.open('https://wa.me/' + s.phone + '?text=' + msg, '_blank');
-  logSend(s, activity);
+  logSend(s, activity, teacherName);
 });
 
 activityInput.addEventListener('input', updateActivityStatus);
+teacherInput.addEventListener('input', updateActivityStatus);
 searchBox.addEventListener('input', debouncedRender);
 fBranch.addEventListener('change', function(){ updateClassOptions(); render(); });
 fClass.addEventListener('change', function(){ updateSectionOptions(); render(); });
@@ -528,7 +562,9 @@ $('btnClearLog').addEventListener('click', async function(){
 });
 
 // ---------- Reports ----------
-const rActivity = $('rActivity'), rBranch = $('rBranch');
+const rActivity = $('rActivity'), rBranch = $('rBranch'), rDateRange = $('rDateRange');
+const rCustomDates = $('rCustomDates'), rDateFrom = $('rDateFrom'), rDateTo = $('rDateTo');
+
 function populateReportFilters(){
   const activities = uniqueSorted(sentLog.map(l=>l.activity));
   const current = rActivity.value;
@@ -539,14 +575,62 @@ function populateReportFilters(){
   rBranch.innerHTML = '<option value="">All Branches</option>' + branches.map(b=>'<option value="'+escapeHtml(b)+'">'+escapeHtml(b)+'</option>').join('');
   if(branches.includes(currentB)) rBranch.value = currentB;
 }
-function pct(sent, total){ return total === 0 ? 0 : Math.round((sent/total)*100); }
+
+// Returns display string for a percentage, showing 1 decimal place for small
+// non-zero values so e.g. 5/4227 shows "0.1%" instead of misleadingly "0%"
+function pctLabel(sent, total){
+  if(total === 0) return '0%';
+  const raw = (sent / total) * 100;
+  if(raw > 0 && raw < 1) return raw.toFixed(1) + '%';
+  return Math.round(raw) + '%';
+}
+function pctWidth(sent, total){
+  if(total === 0) return 0;
+  return Math.max((sent / total) * 100, sent > 0 ? 1.5 : 0); // tiny visible sliver if any sent
+}
+
+function getDateRangeBounds(){
+  const mode = rDateRange.value;
+  const now = new Date();
+  let start = null, end = null;
+  if(mode === 'today'){
+    start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    end = new Date(start.getTime() + 24*60*60*1000);
+  }else if(mode === 'yesterday'){
+    const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    start = y; end = new Date(y.getTime() + 24*60*60*1000);
+  }else if(mode === 'last7'){
+    start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+    end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  }else if(mode === 'thismonth'){
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+    end = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  }else if(mode === 'custom'){
+    if(rDateFrom.value) start = new Date(rDateFrom.value + 'T00:00:00');
+    if(rDateTo.value) end = new Date(rDateTo.value + 'T23:59:59');
+  }
+  return { start: start, end: end };
+}
+
+rDateRange.addEventListener('change', function(){
+  rCustomDates.style.display = (rDateRange.value === 'custom') ? 'flex' : 'none';
+  renderReports();
+});
+rDateFrom.addEventListener('change', renderReports);
+rDateTo.addEventListener('change', renderReports);
+
 function renderReports(){
   populateReportFilters();
   const activityFilter = rActivity.value;
   const branchFilter = rBranch.value;
+  const { start, end } = getDateRangeBounds();
+
   let logPool = sentLog;
   if(activityFilter) logPool = logPool.filter(l => (l.activity||'').toLowerCase() === activityFilter.toLowerCase());
   if(branchFilter) logPool = logPool.filter(l => l.branch === branchFilter);
+  if(start) logPool = logPool.filter(l => new Date(l.ts) >= start);
+  if(end) logPool = logPool.filter(l => new Date(l.ts) < end);
+
   let studentPool = students;
   if(branchFilter) studentPool = studentPool.filter(s => s.branch === branchFilter);
   const uniqueSentKeys = new Set(logPool.map(l => l.phone+'|'+l.studentName));
@@ -555,15 +639,16 @@ function renderReports(){
     '<div class="stat-card"><div class="num">' + logPool.length + '</div><div class="lbl">Messages Sent</div></div>' +
     '<div class="stat-card"><div class="num">' + uniqueSentKeys.size + '</div><div class="lbl">Unique Students Reached</div></div>' +
     '<div class="stat-card"><div class="num">' + studentPool.length + '</div><div class="lbl">Total Students (filter)</div></div>' +
-    '<div class="stat-card"><div class="num">' + pct(uniqueSentKeys.size, studentPool.length) + '%</div><div class="lbl">Coverage</div></div>';
+    '<div class="stat-card"><div class="num">' + pctLabel(uniqueSentKeys.size, studentPool.length) + '</div><div class="lbl">Coverage</div></div>';
 
   const branches = uniqueSorted(students.map(s=>s.branch));
   const branchRows = branches.filter(b => !branchFilter || b === branchFilter).map(function(b){
     const totalInBranch = students.filter(s=>s.branch===b).length;
     const sentKeys = new Set(logPool.filter(l=>l.branch===b).map(l=>l.phone+'|'+l.studentName));
-    const p = pct(sentKeys.size, totalInBranch);
+    const label = pctLabel(sentKeys.size, totalInBranch);
+    const width = pctWidth(sentKeys.size, totalInBranch);
     return '<tr><td>' + escapeHtml(b) + '</td><td>' + sentKeys.size + '</td><td>' + totalInBranch + '</td>' +
-      '<td><div style="display:flex;align-items:center;gap:8px;"><span>' + p + '%</span><div class="progress-bar" style="flex:1;"><div class="fill" style="width:' + p + '%;"></div></div></div></td></tr>';
+      '<td><div style="display:flex;align-items:center;gap:8px;"><span>' + label + '</span><div class="progress-bar" style="flex:1;"><div class="fill" style="width:' + width + '%;"></div></div></div></td></tr>';
   }).join('');
   $('branchReportBody').innerHTML = branchRows || '<tr><td colspan="4" class="empty">No data yet</td></tr>';
 
@@ -572,9 +657,10 @@ function renderReports(){
     const parts = key.split('||'); const b = parts[0], c = parts[1], sec = parts[2];
     const totalInClass = students.filter(s=>s.branch===b && s.class===c && s.section===sec).length;
     const sentKeys = new Set(logPool.filter(l=>l.branch===b && l.class===c && l.section===sec).map(l=>l.phone+'|'+l.studentName));
-    const p = pct(sentKeys.size, totalInClass);
+    const label = pctLabel(sentKeys.size, totalInClass);
+    const width = pctWidth(sentKeys.size, totalInClass);
     return '<tr><td>' + escapeHtml(b) + '</td><td><span class="cls-chip">' + escapeHtml(c) + '-' + escapeHtml(sec) + '</span></td><td>' + sentKeys.size + '</td><td>' + totalInClass + '</td>' +
-      '<td><div style="display:flex;align-items:center;gap:8px;"><span>' + p + '%</span><div class="progress-bar" style="flex:1;"><div class="fill" style="width:' + p + '%;"></div></div></div></td></tr>';
+      '<td><div style="display:flex;align-items:center;gap:8px;"><span>' + label + '</span><div class="progress-bar" style="flex:1;"><div class="fill" style="width:' + width + '%;"></div></div></div></td></tr>';
   }).join('');
   $('classReportBody').innerHTML = classRows || '<tr><td colspan="5" class="empty">No data yet</td></tr>';
 
@@ -611,7 +697,7 @@ function renderReports(){
     logBody.innerHTML = displayLog.map(function(l){
       const dt = new Date(l.ts);
       const dtStr = dt.toLocaleDateString('en-IN') + ' ' + dt.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
-      return '<tr><td class="sub">' + dtStr + '</td><td>' + escapeHtml(l.activity) + '</td><td>' + escapeHtml(l.studentName) + '</td>' +
+      return '<tr><td class="sub">' + dtStr + '</td><td>' + escapeHtml(l.teacherName || '—') + '</td><td>' + escapeHtml(l.activity) + '</td><td>' + escapeHtml(l.studentName) + '</td>' +
         '<td><span class="cls-chip">' + escapeHtml(l.class) + '-' + escapeHtml(l.section) + '</span></td><td>' + escapeHtml(l.branch) + '</td></tr>';
     }).join('');
   }
